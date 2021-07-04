@@ -1,0 +1,57 @@
+FUNCTION_BLOCK Batarya    // Block definition (there may be more than one block per file)
+
+// Define input variables
+VAR_INPUT                
+    voltaj : REAL;
+    sicaklik : REAL;
+END_VAR
+
+// Define output variable
+VAR_OUTPUT                
+    doluluk : REAL;
+END_VAR
+
+// Fuzzify input variable 'voltaj': {'az', 'orta' , 'cok'}
+FUZZIFY voltaj            
+    TERM az := (11.5,0) (11.5, 1) (12.5, 0) ; 
+    TERM orta := (12, 0) (12.5,1) (13,0) ;
+    TERM cok := (12.5, 0) (13.5, 1) (13.5, 0) ;
+END_FUZZIFY
+
+// Fuzzify input variable 'sicaklik': { 'soguk', 'ilik', 'sicak' }
+FUZZIFY sicaklik            
+    TERM soguk := (25,0) (25, 1) (26, 1) (30,0) ;
+    TERM ilik := (26,0) (30,1) (34,0);
+    TERM sicak := (32, 0) (34, 1) (36,1) (36,0) ;
+END_FUZZIFY
+
+// Defzzzify output variable 'doluluk' : {'cokaz', 'az', 'orta', 'ortaustu', 'dolu' }
+DEFUZZIFY doluluk            
+    TERM cokaz := (0,0) (0,1) (20,0);
+    TERM az := (10,0) (30,1) (50,0);
+    TERM orta := (30,0) (50,1) (70,0);
+    TERM ortaustu := (60,0) (75,1) (90,0);
+    TERM dolu := (85,0) (100,1) (100,0);
+    METHOD : COG;        // Use 'Center of Gravity' defuzzification method
+    DEFAULT := 0;        // Default value is 0 (if no rule activates defuzzifier)
+END_DEFUZZIFY
+
+// Inference rules
+RULEBLOCK KuralBlok1
+    AND : MIN;    // Use 'min' for 'and'
+    ACT : MIN;    // Use 'min' activation method
+    ACCU : MAX;    // Use 'max' accumulation method
+
+    RULE 1 : IF sicaklik IS soguk AND voltaj IS az THEN doluluk IS cokaz;
+    RULE 2 : IF sicaklik IS soguk AND voltaj IS orta THEN doluluk IS orta;
+    RULE 3 : IF sicaklik IS soguk AND voltaj IS cok THEN doluluk IS dolu;
+    RULE 4 : IF sicaklik IS ilik AND voltaj IS az THEN doluluk IS az;
+    RULE 5 : IF sicaklik IS ilik AND voltaj IS orta THEN doluluk IS orta;
+    RULE 6 : IF sicaklik IS ilik AND voltaj IS cok THEN doluluk IS ortaustu;
+    RULE 7 : IF sicaklik IS sicak AND voltaj IS az THEN doluluk IS az;
+    RULE 8 : IF sicaklik IS sicak AND voltaj IS orta THEN doluluk IS orta;
+    RULE 9 : IF sicaklik IS sicak AND voltaj IS cok THEN doluluk IS ortaustu;
+    
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
